@@ -7,74 +7,146 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 20px;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+      text-align: center;
     }
     h1 {
-      text-align: center;
+      color: #444;
+    }
+    .server {
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: left;
     }
     .status {
       font-size: 20px;
       margin-top: 20px;
-      text-align: center;
     }
     .online {
-      color: green;
+      color: #3a9e3a;
+      font-weight: bold;
     }
     .offline {
-      color: red;
+      color: #e63946;
+      font-weight: bold;
     }
-    .server {
-      margin-top: 30px;
+    .loading {
+      color: #ffbb33;
+    }
+    .players {
+      margin-top: 10px;
+      font-size: 16px;
+      color: #555;
+    }
+    .online-indicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 10px;
+      background-color: #3a9e3a;
+    }
+    .offline-indicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 10px;
+      background-color: #e63946;
+    }
+    .server-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: #ccc;
+      margin-right: 15px;
+      display: inline-block;
+    }
+    .server-info {
+      display: inline-block;
+      vertical-align: top;
+      line-height: 50px;
+    }
+    .server-name {
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+    }
+    .max-players {
+      font-size: 14px;
+      color: #777;
     }
   </style>
 </head>
 <body>
-  <h1>Minecraft サーバー状況</h1>
-  
-  <!-- tack2427 サーバーの状態 -->
-  <div class="server">
-    <h2>tack2427.aternos.me の状況</h2>
-    <p id="serverStatusTack2427">サーバー情報を読み込み中...</p>
-  </div>
-  
-  <!-- tackruka サーバーの状態 -->
-  <div class="server">
-    <h2>tackruka.aternos.me の状況</h2>
-    <p id="serverStatusTackruka">サーバー情報を読み込み中...</p>
-  </div>
-  
-  <script>
-    // サーバーのIPアドレス
-    const serverIPs = {
-      tack2427: 'tack2427.aternos.me',
-      tackruka: 'tackruka.aternos.me'
-    };
 
-    // mcsrvstat.us APIのURL
-    function getServerStatus(server) {
-      const apiUrl = `https://api.mcsrvstat.us/2/${serverIPs[server]}`;
-      return fetch(apiUrl)
-        .then(response => response.json())
-        .then(data => {
-          const statusElement = document.getElementById(`serverStatus${server.charAt(0).toUpperCase() + server.slice(1)}`);
-          if (data.online) {
-            statusElement.textContent = `${serverIPs[server]} はオンラインです！ プレイヤー数: ${data.players.online}`;
-            statusElement.classList.add('online');
-          } else {
-            statusElement.textContent = `${serverIPs[server]} はオフラインです。`;
-            statusElement.classList.add('offline');
-          }
-        })
-        .catch(error => {
-          const statusElement = document.getElementById(`serverStatus${server.charAt(0).toUpperCase() + server.slice(1)}`);
-          statusElement.textContent = `${serverIPs[server]} の情報を取得できませんでした。`;
+<h1>Minecraft サーバー状況</h1>
+
+<div id="server1" class="server">
+  <div class="server-icon" id="server1-icon"></div>
+  <div class="server-info">
+    <div class="server-name">tack2427.aternos.me</div>
+    <div class="status" id="server1-status" class="loading">読み込み中...</div>
+    <div class="players" id="server1-players"></div>
+    <div class="max-players" id="server1-max-players"></div>
+  </div>
+</div>
+
+<div id="server2" class="server">
+  <div class="server-icon" id="server2-icon"></div>
+  <div class="server-info">
+    <div class="server-name">tackruka.aternos.me</div>
+    <div class="status" id="server2-status" class="loading">読み込み中...</div>
+    <div class="players" id="server2-players"></div>
+    <div class="max-players" id="server2-max-players"></div>
+  </div>
+</div>
+
+<script>
+  function updateServerStatus(serverId, serverName, apiUrl) {
+    fetch(apiUrl)
+      .then(response => response.json())
+      .then(data => {
+        const statusElement = document.getElementById(`${serverId}-status`);
+        const playersElement = document.getElementById(`${serverId}-players`);
+        const maxPlayersElement = document.getElementById(`${serverId}-max-players`);
+        const iconElement = document.getElementById(`${serverId}-icon`);
+
+        if (data.online) {
+          statusElement.textContent = 'オンライン';
+          statusElement.classList.remove('offline');
+          statusElement.classList.add('online');
+          playersElement.textContent = `プレイヤー: ${data.players.online} / ${data.players.max}`;
+          maxPlayersElement.textContent = `最大人数: ${data.players.max}`;
+          iconElement.style.backgroundImage = `url(${data.icon ? data.icon : 'default-icon.png'})`;
+        } else {
+          statusElement.textContent = 'オフライン';
+          statusElement.classList.remove('online');
           statusElement.classList.add('offline');
-        });
-    }
+          playersElement.textContent = 'プレイヤー: 0 / 0';
+          maxPlayersElement.textContent = '最大人数: 0';
+          iconElement.style.backgroundColor = '#ccc';  // アイコンをデフォルトの色に変更
+        }
+      })
+      .catch(error => {
+        console.error('サーバー情報の取得に失敗しました:', error);
+      });
+  }
 
-    // 両方のサーバーの状態を取得
-    getServerStatus('tack2427');
-    getServerStatus('tackruka');
-  </script>
+  // サーバー1
+  updateServerStatus('server1', 'tack2427.aternos.me', 'https://api.aternos.me/servers/tack2427.status');
+
+  // サーバー2
+  updateServerStatus('server2', 'tackruka.aternos.me', 'https://api.aternos.me/servers/tackruka.status');
+</script>
+
 </body>
 </html>
