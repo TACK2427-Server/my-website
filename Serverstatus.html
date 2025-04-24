@@ -1,155 +1,106 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Minecraft サーバーステータス</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      background-color: #1e1e1e;
-      color: white;
-      text-align: center;
-      padding: 2rem;
-    }
-    .server {
-      background-color: #2e2e2e;
-      border-radius: 10px;
-      padding: 1rem;
-      margin: 1rem auto;
-      max-width: 400px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.5);
-    }
-    .status-online { color: #00ff00; }
-    .status-offline { color: #ff4444; }
-    .icon {
-      width: 64px;
-      height: 64px;
-      border-radius: 8px;
-    }
-    .motd {
-      font-size: 0.9rem;
-      margin: 0.5rem 0;
-    }
-    iframe {
-      width: 100%;
-      max-width: 400px;
-      height: 80px;
-      border: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>サーバー情報</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .server-info {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .server-info img {
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .server-info h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #333;
+        }
+        .server-info p {
+            font-size: 1.1rem;
+            color: #555;
+            margin: 5px 0;
+        }
+        .status {
+            font-weight: bold;
+            color: green;
+        }
+        .status.offline {
+            color: red;
+        }
+    </style>
 </head>
 <body>
-  <h1>Minecraft サーバーステータス</h1>
 
-  <div id="servers"></div>
+    <div class="server-info" id="server1">
+        <h2>tack2427.aternos.me</h2>
+        <img id="server-icon1" src="" alt="Server Icon">
+        <p id="status1" class="status">Loading...</p>
+        <p id="motd1">MOTD: Loading...</p>
+        <p id="players1">Players: Loading...</p>
+        <p id="max-players1">Max Players: Loading...</p>
+    </div>
 
-  <script>
-    const servers = [
-      "tack2427.aternos.me",
-      "tackruka.aternos.me"
-    ];
+    <div class="server-info" id="server2">
+        <h2>tackruka.aternos.me</h2>
+        <img id="server-icon2" src="" alt="Server Icon">
+        <p id="status2" class="status">Loading...</p>
+        <p id="motd2">MOTD: Loading...</p>
+        <p id="players2">Players: Loading...</p>
+        <p id="max-players2">Max Players: Loading...</p>
+    </div>
 
-    const mcColors = {
-      0: "#000000", 1: "#0000AA", 2: "#00AA00", 3: "#00AAAA", 4: "#AA0000",
-      5: "#AA00AA", 6: "#FFAA00", 7: "#AAAAAA", 8: "#555555", 9: "#5555FF",
-      a: "#55FF55", b: "#55FFFF", c: "#FF5555", d: "#FF55FF", e: "#FFFF55", f: "#FFFFFF"
-    };
-
-    const mcStyles = {
-      l: "font-weight:bold;",
-      m: "text-decoration:line-through;",
-      n: "text-decoration:underline;",
-      o: "font-style:italic;"
-    };
-
-    function parseMOTD(text) {
-      let html = "";
-      let color = "";
-      let extra = "";
-      let parts = text.split(/§([0-9a-fk-or])/i);
-
-      for (let i = 0; i < parts.length; i++) {
-        if (i % 2 === 0) {
-          if (parts[i]) {
-            html += `<span style="color:${color};${extra}">${parts[i]}</span>`;
-          }
-        } else {
-          let code = parts[i].toLowerCase();
-          if (mcColors[code]) {
-            color = mcColors[code];
-            extra = "";
-          } else if (mcStyles[code]) {
-            extra += mcStyles[code];
-          } else if (code === "r") {
-            color = "";
-            extra = "";
-          }
+    <script>
+        // サーバー情報を取得する関数
+        function fetchServerInfo(serverUrl, iconId, statusId, motdId, playersId, maxPlayersId) {
+            fetch(serverUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.online) {
+                        document.getElementById(statusId).textContent = "Online";
+                        document.getElementById(statusId).classList.remove('offline');
+                        document.getElementById(statusId).classList.add('online');
+                        document.getElementById(motdId).textContent = `MOTD: ${data.motd.text}`;
+                        document.getElementById(playersId).textContent = `Players: ${data.players.online}`;
+                        document.getElementById(maxPlayersId).textContent = `Max Players: ${data.players.max}`;
+                        document.getElementById(iconId).src = data.icon;
+                    } else {
+                        document.getElementById(statusId).textContent = "Offline";
+                        document.getElementById(statusId).classList.add('offline');
+                        document.getElementById(statusId).classList.remove('online');
+                        document.getElementById(motdId).textContent = "MOTD: N/A";
+                        document.getElementById(playersId).textContent = "Players: 0";
+                        document.getElementById(maxPlayersId).textContent = "Max Players: 0";
+                        document.getElementById(iconId).src = "";
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching server data:", error);
+                    document.getElementById(statusId).textContent = "Error";
+                    document.getElementById(statusId).classList.add('offline');
+                });
         }
-      }
 
-      return html;
-    }
-
-    async function fetchServerStatus(address) {
-      const res = await fetch(`https://api.mcstatus.io/v2/status/java/${address}?_=${Date.now()}`);
-      if (!res.ok) throw new Error("取得失敗");
-      return res.json();
-    }
-
-    async function load() {
-      const container = document.getElementById("servers");
-      for (const address of servers) {
-        const div = document.createElement("div");
-        div.className = "server";
-        div.innerHTML = `<h2>${address}</h2><p>取得中...</p>`;
-        container.appendChild(div);
-
-        try {
-          const data = await fetchServerStatus(address);
-
-          // サーバーのオンライン状態
-          const online = data.online;
-          const icon = data.icon ? `data:image/png;base64,${data.icon}` : "";
-          const motdRaw = data.motd.raw?.join("\n") || "";
-          const motdHtml = parseMOTD(motdRaw);
-          const max = data.players.max || "?";
-          const current = data.players.online || "0";
-
-          // オンライン状態に応じて表示
-          div.innerHTML = `
-            <h2>${address}</h2>
-            ${icon ? `<img src="${icon}" alt="icon" class="icon">` : "<p>アイコンなし</p>"}
-            <p class="${online ? "status-online" : "status-offline"}">
-              ${online ? "オンライン" : "オフライン"}
-            </p>
-            <div class="motd">${motdHtml}</div>
-            ${online ? `<p>プレイヤー数: ${current} / ${max}</p>` : ""}
-          `;
-        } catch (err) {
-          // 失敗した場合でも少なくともオンライン/オフライン状態を表示
-          div.innerHTML = `
-            <h2>${address}</h2>
-            <p class="status-offline">取得失敗</p>
-            <p>オフライン</p>
-          `;
-        }
-      }
-    }
-
-    load();
-  </script>
-
-  <!-- ウィジェット追加 -->
-  <div class="server">
-    <h2>tack2427 サーバー ウィジェット</h2>
-    <iframe src="https://api.mcstatus.io/v2/widget/java/tack2427.aternos.me"></iframe>
-  </div>
-
-  <div class="server">
-    <h2>tackruka サーバー ウィジェット</h2>
-    <iframe src="https://api.mcstatus.io/v2/widget/java/tackruka.aternos.me"></iframe>
-  </div>
+        // サーバー1（tack2427.aternos.me）の情報を取得
+        fetchServerInfo('https://api.mcsrvstat.us/2/tack2427.aternos.me', 'server-icon1', 'status1', 'motd1', 'players1', 'max-players1');
+        
+        // サーバー2（tackruka.aternos.me）の情報を取得
+        fetchServerInfo('https://api.mcsrvstat.us/2/tackruka.aternos.me', 'server-icon2', 'status2', 'motd2', 'players2', 'max-players2');
+    </script>
 
 </body>
 </html>
