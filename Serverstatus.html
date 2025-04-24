@@ -2,31 +2,97 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>Minecraft サーバー状況（テスト）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Minecraft サーバーステータス</title>
   <style>
-    body { font-family: sans-serif; margin: 2em; }
-    .online { color: green; }
-    .offline { color: red; }
-    .server { margin-bottom: 2em; }
+    body {
+      font-family: sans-serif;
+      background: #1e1e1e;
+      color: #fff;
+      padding: 2rem;
+    }
+    .server {
+      background: #2e2e2e;
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .server-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 8px;
+      image-rendering: pixelated;
+    }
+    .status-online {
+      color: #4caf50;
+      font-weight: bold;
+    }
+    .status-offline {
+      color: #f44336;
+      font-weight: bold;
+    }
+    .motd {
+      white-space: pre-line;
+      font-family: monospace;
+    }
   </style>
 </head>
 <body>
-  <h1>Minecraft サーバー状況（テスト表示）</h1>
+  <h1>Minecraft サーバーステータス</h1>
+  <div id="servers"></div>
 
-  <div class="server online">
-    <h2>tack2427.aternos.me</h2>
-    <img src="https://api.mcstatus.io/v2/icon/tack2427.aternos.me" alt="アイコン" width="64" />
-    <p>ステータス: <strong>オンライン</strong></p>
-    <p>バージョン: 1.20.4</p>
-    <p>人数: 3 / 10</p>
-    <p>MOTD: ようこそ！</p>
-  </div>
+  <script>
+    const serverList = [
+      { name: "tack2427", address: "tack2427.aternos.me" },
+      { name: "tackruka", address: "tackruka.aternos.me" }
+    ];
 
-  <div class="server offline">
-    <h2>tackruka.aternos.me</h2>
-    <img src="https://api.mcstatus.io/v2/icon/tackruka.aternos.me" alt="アイコン" width="64" />
-    <p>ステータス: <strong>オフライン</strong></p>
-  </div>
+    const serversDiv = document.getElementById("servers");
 
+    const fetchServerStatus = async () => {
+      serversDiv.innerHTML = ""; // Clear previous results
+
+      for (const server of serverList) {
+        try {
+          const res = await fetch(`https://api.mcstatus.io/v2/status/java/${server.address}`);
+          const data = await res.json();
+
+          const online = data.online;
+          const motdRaw = data.motd.html.join("\n");
+          const icon = data.icon || "";
+          const players = data.players;
+          const version = data.version?.name_clean || "不明";
+
+          const div = document.createElement("div");
+          div.className = "server";
+
+          div.innerHTML = `
+            <img class="server-icon" src="${icon}" alt="icon">
+            <div>
+              <h2>${server.name}（${server.address}）</h2>
+              <p>ステータス: <span class="${online ? "status-online" : "status-offline"}">${online ? "オンライン" : "オフライン"}</span></p>
+              <p>プレイヤー数: ${players.online} / ${players.max}</p>
+              <p>バージョン: ${version}</p>
+              <div class="motd">${motdRaw}</div>
+            </div>
+          `;
+          serversDiv.appendChild(div);
+
+        } catch (err) {
+          const errorDiv = document.createElement("div");
+          errorDiv.className = "server";
+          errorDiv.innerHTML = `<p>❌ ${server.name}（${server.address}）の情報取得に失敗しました。</p>`;
+          serversDiv.appendChild(errorDiv);
+        }
+      }
+    };
+
+    fetchServerStatus();
+    setInterval(fetchServerStatus, 30 * 1000); // 30秒ごとに更新
+  </script>
 </body>
 </html>
