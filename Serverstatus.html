@@ -31,6 +31,12 @@
       font-size: 0.9rem;
       margin: 0.5rem 0;
     }
+    iframe {
+      width: 100%;
+      max-width: 400px;
+      height: 80px;
+      border: none;
+    }
   </style>
 </head>
 <body>
@@ -121,7 +127,12 @@
             ${online ? `<p>プレイヤー数: ${current} / ${max}</p>` : ""}
           `;
         } catch (err) {
-          div.innerHTML = `<h2>${address}</h2><p style="color:red;">取得失敗</p>`;
+          // 失敗した場合でも少なくともオンライン/オフライン状態を表示
+          div.innerHTML = `
+            <h2>${address}</h2>
+            <p class="status-offline">取得失敗</p>
+            <p>オフライン</p>
+          `;
         }
       }
     }
@@ -132,12 +143,12 @@
   <!-- ウィジェット追加 -->
   <div class="server">
     <h2>tack2427 サーバー ウィジェット</h2>
-    <iframe src="https://api.mcstatus.io/v2/widget/java/tack2427.aternos.me" width="400" height="80" frameborder="0"></iframe>
+    <iframe src="https://api.mcstatus.io/v2/widget/java/tack2427.aternos.me"></iframe>
   </div>
 
   <div class="server">
     <h2>tackruka サーバー ウィジェット</h2>
-    <iframe src="https://api.mcstatus.io/v2/widget/java/tackruka.aternos.me" width="400" height="80" frameborder="0"></iframe>
+    <iframe src="https://api.mcstatus.io/v2/widget/java/tackruka.aternos.me"></iframe>
   </div>
 
 </body>
