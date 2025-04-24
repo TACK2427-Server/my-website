@@ -29,7 +29,6 @@
     }
     .motd {
       font-size: 0.9rem;
-      color: #ccc;
       margin: 0.5rem 0;
     }
   </style>
@@ -45,16 +44,51 @@
       "tackruka.aternos.me"
     ];
 
+    const mcColors = {
+      0: "#000000", 1: "#0000AA", 2: "#00AA00", 3: "#00AAAA", 4: "#AA0000",
+      5: "#AA00AA", 6: "#FFAA00", 7: "#AAAAAA", 8: "#555555", 9: "#5555FF",
+      a: "#55FF55", b: "#55FFFF", c: "#FF5555", d: "#FF55FF", e: "#FFFF55", f: "#FFFFFF"
+    };
+
+    const mcStyles = {
+      l: "font-weight:bold;",
+      m: "text-decoration:line-through;",
+      n: "text-decoration:underline;",
+      o: "font-style:italic;"
+    };
+
+    function parseMOTD(text) {
+      let html = "";
+      let color = "";
+      let extra = "";
+      let parts = text.split(/§([0-9a-fk-or])/i);
+
+      for (let i = 0; i < parts.length; i++) {
+        if (i % 2 === 0) {
+          if (parts[i]) {
+            html += `<span style="color:${color};${extra}">${parts[i]}</span>`;
+          }
+        } else {
+          let code = parts[i].toLowerCase();
+          if (mcColors[code]) {
+            color = mcColors[code];
+            extra = "";
+          } else if (mcStyles[code]) {
+            extra += mcStyles[code];
+          } else if (code === "r") {
+            color = "";
+            extra = "";
+          }
+        }
+      }
+
+      return html;
+    }
+
     async function fetchServerStatus(address) {
       const res = await fetch(`https://api.mcstatus.io/v2/status/java/${address}?_=${Date.now()}`);
       if (!res.ok) throw new Error("取得失敗");
       return res.json();
-    }
-
-    function stripHtml(str) {
-      const div = document.createElement("div");
-      div.innerHTML = str;
-      return div.textContent || div.innerText || "";
     }
 
     async function load() {
@@ -67,19 +101,23 @@
 
         try {
           const data = await fetchServerStatus(address);
+
+          // サーバーのオンライン状態
           const online = data.online;
           const icon = data.icon ? `data:image/png;base64,${data.icon}` : "";
-          const motd = stripHtml(data.motd.html || data.motd.clean || "");
+          const motdRaw = data.motd.raw?.join("\n") || "";
+          const motdHtml = parseMOTD(motdRaw);
           const max = data.players.max || "?";
           const current = data.players.online || "0";
 
+          // オンライン状態に応じて表示
           div.innerHTML = `
             <h2>${address}</h2>
-            ${icon ? `<img src="${icon}" alt="icon" class="icon">` : ""}
+            ${icon ? `<img src="${icon}" alt="icon" class="icon">` : "<p>アイコンなし</p>"}
             <p class="${online ? "status-online" : "status-offline"}">
               ${online ? "オンライン" : "オフライン"}
             </p>
-            <div class="motd">${motd}</div>
+            <div class="motd">${motdHtml}</div>
             ${online ? `<p>プレイヤー数: ${current} / ${max}</p>` : ""}
           `;
         } catch (err) {
@@ -90,6 +128,17 @@
 
     load();
   </script>
+
+  <!-- ウィジェット追加 -->
+  <div class="server">
+    <h2>tack2427 サーバー ウィジェット</h2>
+    <iframe src="https://api.mcstatus.io/v2/widget/java/tack2427.aternos.me" width="400" height="80" frameborder="0"></iframe>
+  </div>
+
+  <div class="server">
+    <h2>tackruka サーバー ウィジェット</h2>
+    <iframe src="https://api.mcstatus.io/v2/widget/java/tackruka.aternos.me" width="400" height="80" frameborder="0"></iframe>
+  </div>
+
 </body>
 </html>
-
