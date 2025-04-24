@@ -26,6 +26,7 @@
       height: 64px;
       border-radius: 8px;
       image-rendering: pixelated;
+      background: #444;
     }
     .status-online {
       color: #4caf50;
@@ -47,24 +48,25 @@
 
   <script>
     const serverList = [
-      { name: "tack2427", address: "tack2427.aternos.me" },
-      { name: "tackruka", address: "tackruka.aternos.me" }
+      "tack2427.aternos.me",
+      "tackruka.aternos.me"
     ];
 
     const serversDiv = document.getElementById("servers");
 
     const fetchServerStatus = async () => {
-      serversDiv.innerHTML = ""; // Clear previous results
+      serversDiv.innerHTML = "";
 
-      for (const server of serverList) {
+      for (const address of serverList) {
         try {
-          const res = await fetch(`https://api.mcstatus.io/v2/status/java/${server.address}`);
+          const res = await fetch(`https://api.mcstatus.io/v2/status/java/${address}`);
+          if (!res.ok) throw new Error("レスポンスエラー");
           const data = await res.json();
 
           const online = data.online;
-          const motdRaw = data.motd.html.join("\n");
+          const motdRaw = data.motd?.html?.join("\n") || "情報なし";
           const icon = data.icon || "";
-          const players = data.players;
+          const players = data.players || { online: 0, max: 0 };
           const version = data.version?.name_clean || "不明";
 
           const div = document.createElement("div");
@@ -73,7 +75,7 @@
           div.innerHTML = `
             <img class="server-icon" src="${icon}" alt="icon">
             <div>
-              <h2>${server.name}（${server.address}）</h2>
+              <h2>${address}</h2>
               <p>ステータス: <span class="${online ? "status-online" : "status-offline"}">${online ? "オンライン" : "オフライン"}</span></p>
               <p>プレイヤー数: ${players.online} / ${players.max}</p>
               <p>バージョン: ${version}</p>
@@ -83,10 +85,19 @@
           serversDiv.appendChild(div);
 
         } catch (err) {
-          const errorDiv = document.createElement("div");
-          errorDiv.className = "server";
-          errorDiv.innerHTML = `<p>❌ ${server.name}（${server.address}）の情報取得に失敗しました。</p>`;
-          serversDiv.appendChild(errorDiv);
+          const div = document.createElement("div");
+          div.className = "server";
+          div.innerHTML = `
+            <img class="server-icon" src="" alt="icon">
+            <div>
+              <h2>${address}</h2>
+              <p>ステータス: <span class="status-offline">オフライン（情報取得失敗）</span></p>
+              <p>プレイヤー数: 0 / 0</p>
+              <p>バージョン: 不明</p>
+              <div class="motd">取得失敗（スリープ中またはAPI制限）</div>
+            </div>
+          `;
+          serversDiv.appendChild(div);
         }
       }
     };
