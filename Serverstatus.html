@@ -1,80 +1,32 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minecraft サーバーオンライン状況</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        .server-info {
-            margin-bottom: 30px;
-        }
-        .server-info h2 {
-            color: #4CAF50;
-        }
-        img {
-            max-width: 100px;
-        }
-        .offline {
-            color: red;
-        }
-        .online {
-            color: green;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Minecraft サーバー状況（テスト）</title>
+  <style>
+    body { font-family: sans-serif; margin: 2em; }
+    .online { color: green; }
+    .offline { color: red; }
+    .server { margin-bottom: 2em; }
+  </style>
 </head>
 <body>
-    <h1>Minecraft サーバーオンライン状況</h1>
+  <h1>Minecraft サーバー状況（テスト表示）</h1>
 
-    <div id="server-status"></div>
+  <div class="server online">
+    <h2>tack2427.aternos.me</h2>
+    <img src="https://api.mcstatus.io/v2/icon/tack2427.aternos.me" alt="アイコン" width="64" />
+    <p>ステータス: <strong>オンライン</strong></p>
+    <p>バージョン: 1.20.4</p>
+    <p>人数: 3 / 10</p>
+    <p>MOTD: ようこそ！</p>
+  </div>
 
-    <script>
-        // サーバーの情報（IPと名前）
-        const servers = [
-            { ip: "tack2427.aternos.me", name: "Tack2427 Minecraft Server" },
-            { ip: "tackruka.aternos.me", name: "Tackruka Minecraft Server" }
-        ];
+  <div class="server offline">
+    <h2>tackruka.aternos.me</h2>
+    <img src="https://api.mcstatus.io/v2/icon/tackruka.aternos.me" alt="アイコン" width="64" />
+    <p>ステータス: <strong>オフライン</strong></p>
+  </div>
 
-        // 各サーバーのオンライン情報を取得して表示する
-        servers.forEach(server => {
-            fetch(`https://api.mcstatus.io/v2/status?host=${server.ip}`)
-                .then(response => response.json())
-                .then(data => {
-                    const serverDiv = document.createElement("div");
-                    serverDiv.classList.add("server-info");
-
-                    if (data.online) {
-                        // サーバーがオンラインの場合
-                        serverDiv.innerHTML = `
-                            <h2 class="online">${server.name}（${server.ip}）</h2>
-                            <p>サーバーはオンラインです。</p>
-                            <p>バージョン: ${data.version}</p>
-                            <p>プレイヤー数: ${data.players.online} / ${data.players.max}</p>
-                            <p>サーバーアイコン: <img src="${data.favicon}" alt="サーバーアイコン" /></p>
-                            <p>MOTD:</p>
-                            <ul>
-                                ${data.motd.raw.map(line => `<li>${line}</li>`).join('')}
-                            </ul>
-                        `;
-                    } else {
-                        // サーバーがオフラインの場合
-                        serverDiv.innerHTML = `
-                            <h2 class="offline">${server.name}（${server.ip}）</h2>
-                            <p>サーバーはオフラインです。</p>
-                        `;
-                    }
-
-                    // サーバー情報をページに追加
-                    document.getElementById("server-status").appendChild(serverDiv);
-                })
-                .catch(error => {
-                    console.error("エラーが発生しました:", error);
-                });
-        });
-    </script>
 </body>
 </html>
-
