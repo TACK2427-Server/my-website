@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>サーバー情報</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: transparent; /* 背景を透過 */
+            position: absolute; /* オーバーレイ用 */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .server-info {
+            background-color: rgba(255, 255, 255, 0.8); /* 半透明の白 */
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .server-info img {
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .server-info h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #333;
+        }
+        .server-info p {
+            font-size: 1.1rem;
+            color: #555;
+            margin: 5px 0;
+        }
+        .status {
+            font-weight: bold;
+            color: green;
+        }
+        .status.offline {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="server-info" id="server1">
+        <h2>tack2427.aternos.me</h2>
+        <img id="server-icon1" src="" alt="Server Icon">
+        <p id="status1" class="status">Loading...</p>
+        <p id="motd1">MOTD: Loading...</p>
+        <p id="players1">Players: Loading...</p>
+        <p id="max-players1">Max Players: Loading...</p>
+    </div>
+
+    <div class="server-info" id="server2">
+        <h2>tackruka.aternos.me</h2>
+        <img id="server-icon2" src="" alt="Server Icon">
+        <p id="status2" class="status">Loading...</p>
+        <p id="motd2">MOTD: Loading...</p>
+        <p id="players2">Players: Loading...</p>
+        <p id="max-players2">Max Players: Loading...</p>
+    </div>
+    <!-- mcstatus.io Widget for tack2427 -->
+    <div style="text-align: center; margin-top: 20px;">
+        <iframe src="https://api.mcstatus.io/v2/widget/java/tack2427.aternos.me" width="100%" height="100" frameborder="0" style="border-radius: 10px;"></iframe>
+    </div>
+
+    <script>
+        // サーバー情報を取得する関数
+        function fetchServerInfo(serverUrl, iconId, statusId, motdId, playersId, maxPlayersId) {
+            fetch(serverUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.online) {
+                        document.getElementById(statusId).textContent = "Online";
+                        document.getElementById(statusId).classList.remove('offline');
+                        document.getElementById(statusId).classList.add('online');
+                        document.getElementById(motdId).textContent = `MOTD: ${data.motd.text}`;
+                        document.getElementById(playersId).textContent = `Players: ${data.players.online}`;
+                        document.getElementById(maxPlayersId).textContent = `Max Players: ${data.players.max}`;
+                        document.getElementById(iconId).src = data.icon;
+                    } else {
+                        document.getElementById(statusId).textContent = "Offline";
+                        document.getElementById(statusId).classList.add('offline');
+                        document.getElementById(statusId).classList.remove('online');
+                        document.getElementById(motdId).textContent = "MOTD: N/A";
+                        document.getElementById(playersId).textContent = "Players: 0";
+                        document.getElementById(maxPlayersId).textContent = "Max Players: 0";
+                        document.getElementById(iconId).src = "";
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching server data:", error);
+                    document.getElementById(statusId).textContent = "Error";
+                    document.getElementById(statusId).classList.add('offline');
+                });
+        }
+
+        // サーバー1（tack2427.aternos.me）の情報を取得
+        fetchServerInfo('https://api.mcsrvstat.us/2/tack2427.aternos.me', 'server-icon1', 'status1', 'motd1', 'players1', 'max-players1');
+        
+        // サーバー2（tackruka.aternos.me）の情報を取得
+        fetchServerInfo('https://api.mcsrvstat.us/2/tackruka.aternos.me', 'server-icon2', 'status2', 'motd2', 'players2', 'max-players2');
+    </script>
+
+</body>
+</html>
