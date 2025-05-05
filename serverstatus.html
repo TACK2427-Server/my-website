@@ -1,0 +1,136 @@
+<!DOCTYPE html> <!-- HTML5の宣言 -->
+<html lang="ja"> <!-- 日本語で書かれたHTMLページ -->
+<head>
+    <meta charset="UTF-8"> <!-- 文字コードをUTF-8に設定（日本語対応） -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- モバイル対応のレスポンシブ設定 -->
+    <title>サーバー情報</title> <!-- ブラウザのタブに表示されるタイトル -->
+
+    <!-- ▼ ファビコン（ブラウザのアイコン） -->
+    <link rel="icon" href="https://www.tack2427.f5.si/icon.jpeg" type="image/jpeg">
+
+    <!-- ▼ OGP（SNSで共有されたときの表示設定） -->
+    <meta property="og:title" content="Minecraftサーバーステータス"> <!-- タイトル -->
+    <meta property="og:description" content="現在のサーバー状況（tack2427.aternos.me など）をリアルタイムで確認できます。"> <!-- 説明文 -->
+    <meta property="og:image" content="https://www.tack2427.f5.si/icon.jpeg"> <!-- 表示される画像 -->
+    <meta property="og:url" content="https://tack2427-server.github.io/my-website/Serverstatus.html"> <!-- このページのURL -->
+    <meta property="og:type" content="website"> <!-- タイプ（普通のウェブサイト） -->
+    <meta property="og:site_name" content="TACKサーバーモニター"> <!-- サイト名 -->
+
+    <style>
+        body { /* 全体のスタイル設定 */
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4; /* 背景色 */
+        }
+        .server-info { /* サーバー情報のカードスタイル */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .server-info img { /* サーバーアイコン画像のスタイル */
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .server-info h2 { /* サーバー名の見出しスタイル */
+            margin: 0;
+            font-size: 1.5rem;
+            color: #333;
+        }
+        .server-info p { /* テキスト（MOTDやプレイヤー数など） */
+            font-size: 1.1rem;
+            color: #555;
+            margin: 5px 0;
+        }
+        .status { /* ステータステキスト（Online/Offline） */
+            font-weight: bold;
+            color: green;
+        }
+        .status.offline { /* オフライン状態の色 */
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ▼ tack2427 サーバーの表示ブロック -->
+    <div class="server-info" id="server1"> <!-- 全体を囲う箱。CSSで白背景＋影つけてある -->
+        <h2>tack2427.aternos.me</h2> <!-- サーバーのホスト名（見出し） -->
+        <img id="server-icon1" src="" alt="Server Icon"> <!-- サーバーアイコン（画像は後でJSで設定） -->
+        <p id="status1" class="status">Loading...</p> <!-- オンライン/オフライン表示（初期は読み込み中） -->
+        <p id="motd1">MOTD: Loading...</p> <!-- MOTD：Message of the Day（説明文） -->
+        <p id="players1">Players: Loading...</p> <!-- 現在の接続プレイヤー数 -->
+        <p id="max-players1">Max Players: Loading...</p> <!-- 最大接続可能プレイヤー数 -->
+    </div>
+
+    <!-- ▼ tackruka サーバーの表示ブロック -->
+    <div class="server-info" id="server2"> <!-- 2つ目のサーバー表示（デザインは上と同じ） -->
+        <h2>tackruka.aternos.me</h2> <!-- 2つ目のホスト名 -->
+        <img id="server-icon2" src="" alt="Server Icon"> <!-- 2つ目のサーバーアイコン -->
+        <p id="status2" class="status">Loading...</p> <!-- 2つ目のサーバーステータス -->
+        <p id="motd2">MOTD: Loading...</p> <!-- 2つ目のMOTD -->
+        <p id="players2">Players: Loading...</p> <!-- 2つ目のプレイヤー数 -->
+        <p id="max-players2">Max Players: Loading...</p> <!-- 2つ目の最大プレイヤー数 -->
+    </div>
+
+    <!-- ▼ mcstatus.io のウィジェット表示（補助的なリアルタイム表示） -->
+    <div style="text-align: center; margin-top: 20px;"> <!-- 中央寄せ＋上に余白 -->
+        <iframe
+            src="https://api.mcstatus.io/v2/widget/java/tack2427.aternos.me"
+            width="100%" height="100" frameborder="0"
+            style="border-radius: 10px;"> <!-- iframeで外部のウィジェット埋め込み -->
+        </iframe>
+    </div>
+
+    <!-- ▼ サーバー情報をAPIから取得して画面に反映させるJS部分 -->
+    <script>
+        // 引数で指定されたID要素に、取得したサーバー情報を流し込む関数
+        function fetchServerInfo(serverUrl, iconId, statusId, motdId, playersId, maxPlayersId) {
+            fetch(serverUrl) // サーバー状態を取得するURL（API）
+                .then(response => response.json()) // JSONデータとして処理
+                .then(data => {
+                    if (data.online) { // サーバーがオンラインのとき
+                        document.getElementById(statusId).textContent = "Online"; // ステータス表示
+                        document.getElementById(statusId).classList.remove('offline'); // 赤色解除
+                        document.getElementById(statusId).classList.add('online'); // 緑色追加
+                        document.getElementById(motdId).textContent = `MOTD: ${data.motd.text}`; // MOTD表示
+                        document.getElementById(playersId).textContent = `Players: ${data.players.online}`; // 現在プレイヤー数
+                        document.getElementById(maxPlayersId).textContent = `Max Players: ${data.players.max}`; // 最大数
+                        document.getElementById(iconId).src = data.icon; // アイコン画像を反映
+                    } else { // サーバーがオフラインのとき
+                        document.getElementById(statusId).textContent = "Offline";
+                        document.getElementById(statusId).classList.add('offline');
+                        document.getElementById(statusId).classList.remove('online');
+                        document.getElementById(motdId).textContent = "MOTD: N/A";
+                        document.getElementById(playersId).textContent = "Players: 0";
+                        document.getElementById(maxPlayersId).textContent = "Max Players: 0";
+                        document.getElementById(iconId).src = ""; // オフライン時はアイコン非表示
+                    }
+                })
+                .catch(error => { // 通信エラーなどの例外処理
+                    console.error("Error fetching server data:", error); // エラーログをコンソールに表示
+                    document.getElementById(statusId).textContent = "Error"; // 画面上にも表示
+                    document.getElementById(statusId).classList.add('offline');
+                });
+        }
+
+        // tack2427 サーバーの情報を取得
+        fetchServerInfo(
+            'https://api.mcsrvstat.us/2/tack2427.aternos.me', // API URL
+            'server-icon1', 'status1', 'motd1', 'players1', 'max-players1'
+        );
+
+        // tackruka サーバーの情報を取得
+        fetchServerInfo(
+            'https://api.mcsrvstat.us/2/tackruka.aternos.me', // API URL
+            'server-icon2', 'status2', 'motd2', 'players2', 'max-players2'
+        );
+    </script>
+
+</body>
+</html>
